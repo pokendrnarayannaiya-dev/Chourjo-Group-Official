@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Plants vs Zombies Lite+</title>
+  <style>
+    body { background: #e0ffd8; margin: 0; font-family: 'Comic Sans MS', Comic, cursive, sans-serif; }
+    #game {
+      margin: 40px auto; background: #5ca94e;
+      width: 700px; height: 350px; border: 6px solid #2b520b;
+      border-radius: 16px; position: relative;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.13);
+    }
+    .tile {
+      position: absolute; width: 60px; height: 60px;
+      border: 1.5px solid #a3d47a; box-sizing: border-box;
+      background: linear-gradient(125deg, #b6fca9 55%, #e4ffd3 100%);
+      border-radius: 12px;
+      transition: background 0.2s;
+      cursor: pointer;
+      z-index: 1;
+    }
+    .tile:hover { background: #f7ffe3; }
+
+    .plant, .zombie, .bullet {
+      position: absolute; z-index: 2;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .plant { width: 54px; height: 54px; left: 3px; top: 3px; }
+    .zombie { width: 46px; height: 62px; }
+    .bullet { width: 22px; height: 22px; }
+
+    #controls {
+      margin: 10px auto 0 auto; width: 700px; text-align: center;
+      background: #fff8cc; padding: 12px; border-radius: 0 0 18px 18px;
+      border: 2px solid #e9d056; border-top: none;
+      font-size: 17px;
+    }
+    #sun {
+      font-size: 22px; background: #f7f2a7; padding: 8px 16px; border-radius: 10px;
+      border: 2px solid #e7c555; margin-right: 30px;
+      box-shadow: 0 0 8px #ffec7f inset;
+    }
+    #plantPicker button {
+      margin: 0 6px 0 0; padding: 5px 8px; font-size: 16px;
+      border-radius: 8px; border: 2px solid #6bc100;
+      background: #e0ffd4; cursor: pointer; min-width: 70px;
+      transition: background 0.15s, border 0.15s;
+      outline: none;
+    }
+    #plantPicker button.selected, #plantPicker button:hover {
+      background: #fffcd2;
+      border: 2px solid #ffb600;
+    }
+    #message {
+      color: #d14a2a; font-weight: bold; margin-left: 26px;
+      font-size: 18px; letter-spacing: 1px;
+    }
+    /* Responsive */
+    @media (max-width: 740px) {
+      #game, #controls { width: 97vw; min-width: 340px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <span id="sun">Sun: 100</span>
+    <span id="plantPicker"></span>
+    <span id="message"></span>
+  </div>
+  <div id="game"></div>
+  <script>
+    // --- Game parameters ---
+    const ROWS = 5, COLS = 10, TILE_SIZE = 68;
+    const INITIAL_SUN = 100;
+    const ZOMBIE_SPAWN_INTERVAL = 160; // frames
+    const GAME_SPEED = 35; // ms per frame
+
+    // --- Plant definitions ---
+    // To add more, just push to this array with new SVGs and logic
+    const PLANT_TYPES = [
+      {
+        name: 'Peashooter',
+        cost: 50,
+        cooldown: 65,
+        description: 'Shoots peas at zombies.',
+        svg: `
+          <svg width="54" height="54">
+            <ellipse cx="27" cy="36" rx="16" ry="18" fill="#7be207" stroke="#358c08" stroke-width="2"/>
+            <ellipse cx="25" cy="21" rx="8" ry="8.5" fill="#5acf13" stroke="#358c08" stroke-width="1.5"/>
+            <ellipse cx="34" cy="17" rx="6" ry="6.7" fill="#adff77" stroke="#358c08" stroke-width="1.2"/>
+            <ellipse cx="38" cy="14" rx="2.2" ry="2.2" fill="#282" />
+            <rect x="15" y="44" width="18" height="8" rx="4" fill="#2ea200" stroke="#357a10" stroke-width="1.5"/>
+          </svg>
+        `,
+        act(plant, board, frame) {
+          if (plant.cooldown <= 0) {
+            shoot(plant.row, plant.col, 'pea');
+            plant.cooldown = this.cooldown;
+          } else plant.cooldown--;
+        }
+      },
+      {
+        name: 'Sunflower',
+        cost: 50,
+        cooldown: 260,
+        description: 'Gives extra sun over time.',
+        svg: `
+          <svg width="54" height="54">
+            <ellipse cx="27" cy="32" rx="14" ry="14" fill="#ffe35b" stroke="#c6a81a" stroke-width="2"/>
+            <ellipse cx="27" cy="32" rx="7.5" ry="7.5" fill="#f7bb2f" stroke="#c6a81a" stroke-width="1.5"/>
+            <ellipse cx="27" cy="46" rx="12" ry="4" fill="#7be207" stroke="#358c08" stroke-width="1.2"/>
+            <ellipse cx="27" cy="20" rx="4" ry="3" fill="#ffe35b" />
+            <ellipse cx="17" cy="26" rx="3" ry="2" fill="#ffe35b" />
+            <ellipse cx="37" cy="26" rx="3" ry="2" fill="#ffe35b" />
+          </svg>
+        `,
+        act(plant, board, frame) {
+          if (plant.cooldown <= 0) {
+            sun += 25; updateSun();
+            showParticle(plant.row, plant.col, 'sun');
+            plant.cooldown = this.cooldown;
+          } else plant.cooldown--;
+        }
+      },
+      {
+        name: 'Wall-nut',
+        cost: 50,
+        cooldown: 0,
+        hp: 21,
+        description: 'Blocks zombies. Tough.',
+        svg: `
+          <svg width="54" height="54">
+            <ellipse cx="27" cy="36" rx="15" ry="18" fill="#e6b97a" stroke="#a97421" stroke-width="2"/>
+            <ellipse cx="20" cy="27" rx="2.2" ry="2.2" fill="#5c3400" />
+            <ellipse cx="34" cy="27" rx="2.2" ry="2.2" fill="#5c3400" />
+            <rect x="23" y="31" width="8" height="4" rx="2" fill="#fff8c2" />
+          </svg>
+        `,
+        act(plant, board, frame) {
+          // Wall-nut does nothing, just sits and tanks
+        }
+      }
+    ];
+
+    // --- Game state ---
+    let sun = INITIAL_SUN;
+    let board = [], plants = [], zombies = [], bullets = [];
+    let spawnTimer = 0, gameOver = false, frame = 0;
+
+    // --- DOM ---
+    const gameEl = document.getElementById('game');
+    const sunEl = document.getElementById('sun');
+    const msgEl = document.getElementById('message');
+    const plantPickerEl = document.getElementById('plantPicker');
+
+    // --- Build grid ---
+    for(let r=0; r<ROWS; r++) {
+      board[r] = [];
+      for(let c=0; c<COLS; c++) {
+        board[r][c] = null;
+        let tile = document.createElement('div');
+        tile.className = 'tile';
+        tile.style.left = (c*TILE_SIZE)+'px';
+        tile.style.top = (r*TILE_SIZE)+'px';
+        tile.dataset.row = r; tile.dataset.col = c;
+        tile.onclick = () => tryPlant(r, c);
+        gameEl.appendChild(tile);
+      }
+    }
+    gameEl.style.width = (COLS*TILE_SIZE) + 'px';
+    gameEl.style.height = (ROWS*TILE_SIZE) + 'px';
+
+    // --- Plant picker UI ---
+    let selectedPlant = 0;
+    function renderPicker() {
+      plantPickerEl.innerHTML = '';
+      PLANT_TYPES.forEach((p, i) => {
+        let btn = document.createElement('button');
+        btn.innerHTML = `<span style="vertical-align:middle;">${p.name}</span>`;
+        btn.title = `${p.name}: ${p.description} (${p.cost} sun)`;
+        if(i===selectedPlant) btn.classList.add('selected');
+        btn.onclick = () => { selectedPlant = i; renderPicker(); showMessage(`${PLANT_TYPES[i].name} selected.`); };
+        // Add SVG icon
+        let span = document.createElement('span');
+        span.innerHTML = p.svg;
+        span.style.marginRight = '3px';
+        btn.prepend(span);
+        plantPickerEl.appendChild(btn);
+      });
+    }
+    renderPicker();
+
+    // --- Plant handler ---
+    function tryPlant(r, c) {
+      if(gameOver) return;
+      let plantType = PLANT_TYPES[selectedPlant];
+      if(board[r][c]) { showMessage("Already planted here!"); return; }
+      if(sun < plantType.cost) { showMessage("Not enough sun!"); return; }
+      plantSeed(r, c, selectedPlant);
+    }
+
+    function plantSeed(r, c, plantIndex) {
+      let plantType = PLANT_TYPES[plantIndex];
+      sun -= plantType.cost;
+      let plant = { row: r, col: c, kind: plantIndex, cooldown: 0, hp: plantType.hp || 7 }; // default hp
+      board[r][c] = plant;
+      plants.push(plant);
+      drawPlant(plant);
+      updateSun();
+    }
+
+    function drawPlant(plant) {
+      let div = document.createElement('div');
+      div.className = 'plant';
+      div.style.left = (plant.col*TILE_SIZE)+'px';
+      div.style.top = (plant.row*TILE_SIZE)+'px';
+      div.innerHTML = PLANT_TYPES[plant.kind].svg;
+      gameEl.appendChild(div);
+      plant.el = div;
+    }
+
+    function updateSun() { sunEl.innerText = `Sun: ${sun}`; }
+    function showMessage(msg) {
+      msgEl.innerText = msg;
+      setTimeout(() => { if(msgEl.innerText===msg) msgEl.innerText=''; }, 1600);
+    }
+
+    // --- Zombie logic ---
+    function spawnZombie() {
+      let row = Math.floor(Math.random()*ROWS);
+      let zombie = {
+        row: row,
+        col: COLS,
+        x: COLS*TILE_SIZE+8,
+        hp: 6 + Math.floor(frame/400), // gets slightly stronger over time
+        el: null
+      };
+      zombies.push(zombie);
+      let zDiv = document.createElement('div');
+      zDiv.className = 'zombie';
+      zDiv.style.left = zombie.x+'px';
+      zDiv.style.top = (row*TILE_SIZE-6)+'px';
+      zDiv.innerHTML = zombieSVG();
+      gameEl.appendChild(zDiv);
+      zombie.el = zDiv;
+    }
+
+    function zombieSVG() {
+      // Cartoon zombie SVG (gray/green)
+      return `
+        <svg width="46" height="62">
+          <ellipse cx="23" cy="34" rx="15" ry="18" fill="#94bb9f" stroke="#344c3c" stroke-width="2"/>
+          <ellipse cx="23" cy="19" rx="10" ry="10" fill="#d7f7d0" stroke="#344c3c" stroke-width="2"/>
+          <ellipse cx="19" cy="17" rx="2.2" ry="2.2" fill="#202" />
+          <ellipse cx="27" cy="17" rx="2.2" ry="2.2" fill="#202" />
+          <rect x="16" y="44" width="14" height="8" rx="4" fill="#bba37a" stroke="#866f4c" stroke-width="1.3"/>
+        </svg>
+      `;
+    }
+
+    // --- Bullets logic ---
+    function shoot(r, c, type) {
+      let bullet = {
+        row: r,
+        type: type,
+        x: c*TILE_SIZE+48,
+        el: null
+      };
+      bullets.push(bullet);
+      let bDiv = document.createElement('div');
+      bDiv.className = 'bullet';
+      bDiv.style.left = bullet.x+'px';
+      bDiv.style.top = (r*TILE_SIZE+22)+'px';
+      bDiv.innerHTML = `<svg width="22" height="22"><ellipse cx="11" cy="11" rx="9" ry="7" fill="#e3f85c" stroke="#c1d830" stroke-width="2"/></svg>`;
+      gameEl.appendChild(bDiv);
+      bullet.el = bDiv;
+    }
+
+    // Sun particle from sunflower
+    function showParticle(r, c, type) {
+      let div = document.createElement('div');
+      div.style.position = 'absolute';
+      div.style.left = (c*TILE_SIZE+20)+'px';
+      div.style.top = (r*TILE_SIZE+10)+'px';
+      div.style.zIndex = 5;
+      div.style.opacity = 1;
+      div.style.pointerEvents = "none";
+      div.innerHTML = `<svg width="25" height="25"><ellipse cx="12" cy="13" rx="11" ry="10" fill="#ffff7e" stroke="#e9e315" stroke-width="2"/></svg>`;
+      gameEl.appendChild(div);
+      let i = 0;
+      let anim = setInterval(()=>{
+        div.style.top = (r*TILE_SIZE+10-i*2)+'px';
+        div.style.opacity = 1-(i/22);
+        if(i++>22) { div.remove(); clearInterval(anim); }
+      }, 22);
+    }
+
+    // --- Plant automatic action ---
+    function plantsAct() {
+      for(let plant of plants) {
+        PLANT_TYPES[plant.kind].act(plant, board, frame);
+      }
+    }
+
+    // --- Bullets move ---
+    function bulletsMove() {
+      for(let i=bullets.length-1; i>=0; i--) {
+        let b = bullets[i];
+        b.x += 8;
+        b.el.style.left = b.x+'px';
+        // Hit?
+        let hit = false;
+        for(let z of zombies) {
+          if(z.row===b.row && z.x < b.x+10 && z.x+40 > b.x) {
+            z.hp -= 2;
+            if(z.hp<=0) removeZombie(z);
+            hit = true; break;
+          }
+        }
+        if(hit || b.x > COLS*TILE_SIZE+30) {
+          b.el.remove(); bullets.splice(i,1);
+        }
+      }
+    }
+
+    // --- Zombies move ---
+    function zombiesMove() {
+      for(let i=zombies.length-1; i>=0; i--) {
+        let z = zombies[i];
+        z.x -= 1.2 + Math.min(frame/1600, 0.6); // speed up gradually
+        z.el.style.left = z.x+'px';
+        let c = Math.floor((z.x+10)/TILE_SIZE);
+        // Eat plant?
+        if(board[z.row][c]) {
+          let plant = board[z.row][c];
+          plant.hp -= 0.35;
+          // Animate munch
+          z.el.style.transform = 'scale(1.07)';
+          setTimeout(()=>{z.el.style.transform='';},170);
+          if(plant.hp<=0) removePlant(z.row, c);
+        }
+        // Game over?
+        if(z.x < 0) { endGame(); return; }
+      }
+    }
+
+    // --- Remove plant/zombie ---
+    function removePlant(r, c) {
+      if(board[r][c]) {
+        board[r][c].el.remove();
+        plants = plants.filter(p => !(p.row==r && p.col==c));
+        board[r][c] = null;
+      }
+    }
+    function removeZombie(z) {
+      z.el.remove();
+      zombies = zombies.filter(zz => zz!==z);
+      sun += 15; updateSun();
+    }
+
+    // --- Main loop ---
+    function gameLoop() {
+      if(gameOver) return;
+      frame++;
+      spawnTimer++;
+      if(spawnTimer >= ZOMBIE_SPAWN_INTERVAL - Math.floor(frame/300)) {
+        spawnZombie();
+        spawnTimer = 0;
+      }
+      plantsAct();
+      bulletsMove();
+      zombiesMove();
+      requestAnimationFrame(gameLoop);
+    }
+
+    // --- Sun drip ---
+    setInterval(() => {
+      if(!gameOver) { sun += 5; updateSun(); }
+    }, 1650);
+
+    function endGame() {
+      showMessage("GAME OVER! Zombies ate your brains!");
+      gameOver = true;
+      setTimeout(()=>alert("GAME OVER! Refresh to play again."), 600);
+    }
+
+    // --- Start! ---
+    updateSun();
+    gameLoop();
+
+  </script>
+</body>
+</html>

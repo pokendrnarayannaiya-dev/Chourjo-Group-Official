@@ -1,0 +1,31 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Record Page</title>
+</head>
+<body>
+  <h2>Recommendations</h2>
+  <ul id="recommendationList"></ul>
+  <button onclick="clearAllRecommendations()">Clear Recommendations</button>
+
+  <script>
+    function showRecommendations() {
+      let messages = JSON.parse(localStorage.getItem("recommendations") || "[]");
+      const ul = document.getElementById("recommendationList");
+      ul.innerHTML = ""; // Clear previous
+      messages.forEach(function(text) {
+        const li = document.createElement("li");
+        li.textContent = text;
+        ul.appendChild(li);
+      });
+    }
+    showRecommendations();
+
+    function clearAllRecommendations() {
+      localStorage.removeItem("recommendations");
+      showRecommendations();
+    }
+  </script>
+</body>
+</html>

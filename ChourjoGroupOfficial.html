@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="Bn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Documend</title>\
+  
+  <link rel="stylesheet" href="ChourjoOffficialCss.css">
+</head>
+<body>
+  
+
+  <div class="ribbon">
+    <div class="home"><button onclick="Home()"><img src="home.png"></button></div>
+    <div class="About Us"><button onclick="AboutUs()"><img src="AboutUs.png"></button></div>
+    <div class="Events"><button onclick="Events()"><img src="Events.png"></button></div>
+
+  </div>
+ <center>
+  <div id="container">
+  <h1 id="Head"> </h1>
+  <p id="content"> </p>
+ 
+    </div>
+
+
+ </center>
+
+<b>
+  <iframe id="Article" src="https://www.wikipedia.org/" frameborder="0" height="500px" width="500px"></iframe>
+
+<a href="https://www.anandabazar.com/">Read about current incidents on Anandabazar</a><br>
+<a href="https://www.google.com/search?client=ubuntu-sn&channel=fs&q=google+translate">Translate</a><br>
+<a href="https://books.google.co.in/">Search for books</a><br>
+<form onsubmit="submitRecommendation(event)">
+  <input type="text" placeholder="Additional Recommendations" id="recordText">
+  <button type="submit">Submit your text</button>
+</form>
+</b>
+
+<script>
+document.querySelectorAll('.Bll1, .Bll2, .Bll3, .Bll4').forEach(function(balloon) {
+  var left = Math.random() * (window.innerWidth - 70);
+  balloon.style.left = left + 'px';
+  balloon.style.bottom = '0px';
+});
+
+  function Home(){
+    
+    document.getElementById("Head").innerHTML = "Home";
+    const mp = "আপাতত কোন খবর নেই। ";
+    document.getElementById("content").innerHTML = mp;
+  }
+  function AboutUs(){
+    document.getElementById("Head").innerHTML = "About Us";
+    document.getElementById("content").innerHTML = "চৌর্য, একদল পর্যটক।";
+
+  }
+  function Events(){
+    document.getElementById("Head").innerHTML = "Events";
+    document.getElementById("content").innerHTML = "Tour to Digha on October.[Starting date not available yet] to [End date not available yet].[Lenght no available yet] days tour.Beach area, second tour of this year";
+  }
+  function submitRecommendation(event){
+  event.preventDefault();
+  let recommendation = document.getElementById("recordText").value;
+  if (!recommendation.trim()) return; // Ignore empty input
+
+  // Get existing messages or create new array
+  let messages = JSON.parse(localStorage.getItem("recommendations") || "[]");
+  messages.push(recommendation);
+  localStorage.setItem("recommendations", JSON.stringify(messages));
+
+  // Optionally clear the input
+  document.getElementById("recordText").value = "";
+
+  // Optionally show a confirmation
+  alert("Your recommendation has been submitted!");
+}
+ 
+    
+      
+    
+  
+  
+</script>
+</body>
+</html>
