@@ -7,25 +7,91 @@
 <body>
   <h2>Recommendations</h2>
   <ul id="recommendationList"></ul>
+<h2>Devices using this site</h2>
+<ul id="deviceList"></ul>
+<h1>Used this site on</h1>
+<ul id="usedSiteList"></ul>
+  <h2>All Messages</h2>
+  <ul id="messageList"></ul>
   <button onclick="clearAllRecommendations()">Clear Recommendations</button>
+<button onclick="showMessages()">Show messgae</button>
+<button onclick="clearAllMessages()"> Clear Messages</button>
+<script>
+  function showRecommendations() {
+    let recommendations = JSON.parse(localStorage.getItem("recommendations") || "[]");
+    const ul = document.getElementById("recommendationList");
+    ul.innerHTML = "";
+    recommendations.forEach(function(text) {
+      const li = document.createElement("li");
+      li.textContent = text;
+      ul.appendChild(li);
+    });
+  }
+  showRecommendations();
 
-  <script>
-    function showRecommendations() {
-      let messages = JSON.parse(localStorage.getItem("recommendations") || "[]");
-      const ul = document.getElementById("recommendationList");
-      ul.innerHTML = ""; // Clear previous
-      messages.forEach(function(text) {
-        const li = document.createElement("li");
-        li.textContent = text;
-        ul.appendChild(li);
-      });
-    }
+  function showMessages() {
+    let messages = JSON.parse(localStorage.getItem("userMessages") || "[]");
+    const ul = document.getElementById("messageList");
+    ul.innerHTML = "";
+    messages.forEach(function(text, index) {
+      const li = document.createElement("li");
+      li.textContent = text + " ";
+      // Create delete button
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "Delete";
+      delBtn.onclick = function() { deleteMessage(index); };
+      li.appendChild(delBtn);
+      ul.appendChild(li);
+    });
+  }
+  showMessages();
+
+  function deleteMessage(index) {
+    let messages = JSON.parse(localStorage.getItem("userMessages") || "[]");
+    messages.splice(index, 1); // Remove the message at the given index
+    localStorage.setItem("userMessages", JSON.stringify(messages));
+    showMessages(); // Refresh the list
+  }
+
+  function clearAllRecommendations() {
+    localStorage.removeItem("recommendations");
     showRecommendations();
+  }
+  function clearAllMessages() {
+    localStorage.removeItem("userMessages");
+    showMessages();
+  }
+  function showDevices() {
+  let devices = JSON.parse(localStorage.getItem("devices") || "[]");
+  const ul = document.getElementById("deviceList");
+  ul.innerHTML = "";
+  devices.forEach(function(device) {
+    const li = document.createElement("li");
+    li.textContent = device;
+    ul.appendChild(li);
+  });
+}
+showDevices();
 
-    function clearAllRecommendations() {
-      localStorage.removeItem("recommendations");
-      showRecommendations();
-    }
-  </script>
+const now = new Date();
+if (document.getElementById("deviceList").children.length=== 0 || (now.getHours() ===0 && now.getMinutes() >0)) {
+  clearAllMessages();
+  clearAllRecommendations();
+  localStorage.removeItem("devices");
+  console.log("server is refreshed as no user and time is more than 12 in night ,good night")
+}
+  function usedSiteList(){
+    let usedSite = JSON.parse(localStorage.getItem("usedSite") || "[]");
+    const ul = document.getElementById("usedSiteList");
+    ul.innerHTML = "";
+    usedSite.forEach(function(date) {
+      const li = document.createElement("li");
+      li.textContent = date;
+      ul.appendChild(li);
+    });
+    usedSiteList();
+  }
+
+</script>
 </body>
 </html>
