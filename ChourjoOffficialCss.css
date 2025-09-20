@@ -1,80 +1,142 @@
-body{
-background-image: url("https://img.freepik.com/premium-vector/background-with-bright-colors_1117820-395.jpg?semt=ais_incoming&w=740&q=80");
-background-position: center;
-background-repeat: no-repeat;
-background-size: cover;
+body {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  font-family: 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
 }
-.ribbon{
+
+.ribbon {
   width: 100%;
-  height: 80px;
-  background-color: rgb(0, 231, 220);
+  height: 90px;
+  background: linear-gradient(90deg, #8e2de2 0%, #4a00e0 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 200px; /* Add space between buttons */
+  gap: 40px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
-button{
+
+.ribbon > div {
+  display: flex;
+  align-items: center;
+}
+
+button, .Submit {
   height: 80px;
-  width:80px;
-  background-color: rgb(174, 0, 255);
-}
-h1{
-font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-}
-p{
-  font-family:fantasy ;
-}
-  
-
-.balloon-container {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none; /* Balloons won't block clicks */
+  width: 80px;
+  background: linear-gradient(135deg, #ff512f 0%, #dd2476 100%);
+  color: #fff;
+  font-size: 18px;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.Bll1, .Bll2, .Bll3, .Bll4 {
-  position: absolute;
-  width: 70px;
-  height: 90px;
-  border-radius: 50%;
-  animation: animationA 3s ease-in-out infinite;
+button:hover, .Submit:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
 }
 
-.Bll1 { background-color: rgb(255, 0, 0); }
-.Bll2 { background-color: rgb(47, 0, 255); }
-.Bll3 { background-color: rgb(43, 255, 0); }
-.Bll4 { background-color: rgb(255, 238, 0); }
+button img {
+  width: 40px;
+  height: 40px;
+  margin-right: 4px;
+  border-radius: 8px;
+}
 
-@keyframes animationA {
-  to {
-    transform: translateY(-10000px);
-  }
+form {
+  margin: 18px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
-.container{
-  background-color: rgba(255, 255, 255, 0.8);
-  padding: 20px;
-  border-radius: 10px;
-  max-width: 800px;
-  margin: auto;
-  margin-top: 20px;
-}
-iframe{
-  height :1000px;
-  width : 100%;
 
-}
-a{
-  color:rgb(0, 255, 255);
-  text-decoration: none;
-  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-  font-size: large;
-}
-input{
-  width: 300px;
-  height: 80px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  padding: 8px;
+input[type="text"] {
+  padding: 12px;
+  border: 1px solid #8e2de2;
+  border-radius: 8px;
   font-size: 16px;
+  outline: none;
+  transition: border 0.2s;
+}
+
+input[type="text"]:focus {
+  border: 2px solid #dd2476;
+}
+
+#container {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  padding: 32px 24px;
+  margin: 32px auto 16px auto;
+  max-width: 600px;
+}
+
+#Head {
+  color: #4a00e0;
+  font-size: 2.2em;
+  margin-bottom: 12px;
+}
+
+#content {
+  color: #333;
+  font-size: 1.2em;
+  margin-bottom: 18px;
+}
+
+#Img {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+  margin-top: 16px;
+}
+
+a {
+  color: #dd2476;
+  text-decoration: none;
+  font-weight: bold;
+  margin-right: 12px;
+  transition: color 0.2s;
+}
+
+a:hover {
+  color: #4a00e0;
+  text-decoration: underline;
+}
+
+#MasagePane h1 {
+  font-size: 1.1em;
+  color: #ff512f;
+  background: #fff0f6;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 8px 0;
+  box-shadow: 0 1px 4px rgba(221,36,118,0.08);
+}
+
+@media (max-width: 700px) {
+  #container {
+    padding: 16px 8px;
+  }
+  .ribbon {
+    flex-direction: column;
+    height: auto;
+    gap: 12px;
+  }
+  button, .Submit {
+    width: 60px;
+    height: 60px;
+    font-size: 15px;
+  }
+  #Img {
+    max-width: 90vw;
+  }
 }
