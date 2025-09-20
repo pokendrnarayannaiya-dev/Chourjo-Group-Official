@@ -2,86 +2,133 @@
 <html lang="Bn">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Documend</title>\
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" reload="true">
+  <meta http-equiv="refresh" content="20.6">
+  <title>Chourjo Group</title>
   <link rel="stylesheet" href="ChourjoOffficialCss.css">
 </head>
 <body>
-  
-
   <div class="ribbon">
-    <div class="home"><button onclick="Home()"><img src="home.png"></button></div>
-    <div class="About Us"><button onclick="AboutUs()"><img src="AboutUs.png"></button></div>
-    <div class="Events"><button onclick="Events()"><img src="Events.png"></button></div>
-
+  <div class="home" onclick="Home()"><button><img src="home.png"></button></div>
+<div class="About Us" onclick="AboutUs()"><button><img src="AboutUs.png"></button></div>
+<div class="Events" onclick="Events()"><button><img src="Events.png"></button></div>
   </div>
- <center>
-  <div id="container">
-  <h1 id="Head"> </h1>
-  <p id="content"> </p>
- 
+  <center>
+    <div id="container">
+      <h1 id="Head"> </h1>
+      <p id="content"> </p>
+      <img src="" id="Img">
     </div>
-
-
- </center>
-
-<b>
-  <iframe id="Article" src="https://www.wikipedia.org/" frameborder="0" height="500px" width="500px"></iframe>
-
-<a href="https://www.anandabazar.com/">Read about current incidents on Anandabazar</a><br>
-<a href="https://www.google.com/search?client=ubuntu-sn&channel=fs&q=google+translate">Translate</a><br>
-<a href="https://books.google.co.in/">Search for books</a><br>
-<form onsubmit="submitRecommendation(event)">
-  <input type="text" placeholder="Additional Recommendations" id="recordText">
-  <button type="submit">Submit your text</button>
+  </center>
+  <b>
+    <a href="https://www.anandabazar.com/">Read about current incidents on Anandabazar</a><br>
+    <a href="https://www.google.com/search?client=ubuntu-sn&channel=fs&q=google+translate">Translate</a><br>
+    <a href="https://books.google.co.in/">Search for books</a><br>
+  <form onsubmit="submitRecommendation(event)">
+  <input type="text" placeholder="Additional Recommendations" id="recordText"><br>
+  <button type="submit" class="Submit">Submit your text</button>
 </form>
-</b>
-
-<script>
-document.querySelectorAll('.Bll1, .Bll2, .Bll3, .Bll4').forEach(function(balloon) {
-  var left = Math.random() * (window.innerWidth - 70);
-  balloon.style.left = left + 'px';
-  balloon.style.bottom = '0px';
-});
-
-  function Home(){
+<form onsubmit="MessagePost(event)">
+  <label >
+    <input type="text" placeholder="Post your message" id="postMessage">
+    <button type="submit" class="Submit">Post idea</button>
+  </label>
+</form>
+    <div id="MasagePane"></div>
     
-    document.getElementById("Head").innerHTML = "Home";
-    const mp = "আপাতত কোন খবর নেই। ";
-    document.getElementById("content").innerHTML = mp;
-  }
-  function AboutUs(){
-    document.getElementById("Head").innerHTML = "About Us";
-    document.getElementById("content").innerHTML = "চৌর্য, একদল পর্যটক।";
-
-  }
-  function Events(){
-    document.getElementById("Head").innerHTML = "Events";
-    document.getElementById("content").innerHTML = "Tour to Digha on October.[Starting date not available yet] to [End date not available yet].[Lenght no available yet] days tour.Beach area, second tour of this year";
-  }
-  function submitRecommendation(event){
-  event.preventDefault();
-  let recommendation = document.getElementById("recordText").value;
-  if (!recommendation.trim()) return; // Ignore empty input
-
-  // Get existing messages or create new array
-  let messages = JSON.parse(localStorage.getItem("recommendations") || "[]");
-  messages.push(recommendation);
-  localStorage.setItem("recommendations", JSON.stringify(messages));
-
-  // Optionally clear the input
-  document.getElementById("recordText").value = "";
-
-  // Optionally show a confirmation
-  alert("Your recommendation has been submitted!");
+  </b>
+  <script>
+let usedSite = JSON.parse(localStorage.getItem("usedSite") || "[]");
+let currentDevice = navigator.userAgent;
+if (!usedSite.includes(currentDevice)) {
+  usedSite.push(currentDevice);
+  localStorage.setItem("usedSite", JSON.stringify(usedSite));
 }
- 
+// Store device info in localStorage
+let devices = JSON.parse(localStorage.getItem("devices") || "[]");
+if (!devices.includes(currentDevice)) {
+  devices.push(currentDevice);
+  localStorage.setItem("devices", JSON.stringify(devices));
+}
+      let messages = JSON.parse(localStorage.getItem("userMessages") || "[]");
+      const container = document.getElementById("MasagePane");
+      container.innerHTML = ""; // Clear existing messages
+      messages.forEach(function(text) {
+        const h1Element = document.createElement("h1");
+        h1Element.textContent = text;
+        container.appendChild(h1Element);
+      });
     
-      
-    
-  
-  
-</script>
+    document.querySelectorAll('.Bll1, .Bll2, .Bll3, .Bll4').forEach(function(balloon) {
+      var left = Math.random() * (window.innerWidth - 70);
+      balloon.style.left = left + 'px';
+      balloon.style.bottom = '0px';
+    });
+
+    function Home(){
+      document.getElementById("Head").innerHTML = "Home";
+      const mp = "আপাতত কোন খবর নেই। ";
+      document.getElementById("content").innerHTML = mp;
+   
+    }
+    function AboutUs(){
+      document.getElementById("Head").innerHTML = "About Us";
+      document.getElementById("content").innerHTML = "চৌর্য, একদল পর্যটক।";
+      document.getElementById("Img").src = "https://static.vecteezy.com/system/resources/previews/007/931/694/non_2x/about-us-button-about-us-text-template-for-website-about-us-icon-flat-style-vector.jpg";
+    }
+
+    function Events(){
+      document.getElementById("Head").innerHTML = "Events";
+      document.getElementById("content").innerHTML = "Tour to Digha on October.[Starting date not available yet] to [End date not available yet].[Lenght no available yet] days tour.Beach area, second tour of this year";
+      document.getElementById("Img").src = "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/07/00/60/71/digha-beach.jpg?w=1200&h=-1&s=1";
+    }
+    function submitRecommendation(event){
+      event.preventDefault();
+
+      let recommendation = document.getElementById("recordText").value;
+      if (!recommendation.trim()) return; // Ignore empty input
+
+      let recommendations = JSON.parse(localStorage.getItem("recommendations") || "[]");
+      recommendations.push(recommendation);
+      localStorage.setItem("recommendations", JSON.stringify(recommendations));
+
+      document.getElementById("recordText").value = "";
+      alert("Your recommendation has been submitted!");
+    }
+
+    function MessagePost(event){
+      event.preventDefault();
+      let message = document.getElementById("postMessage").value;
+      let massenger = prompt("Enter name");
+      let device = navigator.userAgent;
+      if (!message.trim() || !massenger) return;
+
+      // Store message in localStorage for RecordPage.html
+      let messages = JSON.parse(localStorage.getItem("userMessages") || "[]");
+      messages.push(massenger + ": " + message + " (Device: " + device + ")");
+      localStorage.setItem("userMessages", JSON.stringify(messages));
+
+      document.getElementById("postMessage").value = "";
+      alert("Your message has been posted!");
+
+      // Optionally show on this page too:
+      const h1Element = document.createElement("h1");
+      h1Element.textContent = massenger + ": " + message;
+      const container = document.getElementById("MasagePane");
+      container.appendChild(h1Element);
+    }
+    function loadMessages() {
+      let messages = JSON.parse(localStorage.getItem("userMessages") || "[]");
+      const container = document.getElementById("MasagePane");
+      container.innerHTML = ""; // Clear existing messages
+      messages.forEach(function(text) {
+        const h1Element = document.createElement("h1");
+        h1Element.textContent = text;
+        container.appendChild(h1Element);
+      });
+    }
+
+  </script>
+
 </body>
 </html>
